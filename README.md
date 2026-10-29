@@ -1,4 +1,4 @@
-# Job Market Analytics
+# End-to-End Job Market Analytics Platform
 
 A comprehensive platform to analyze job market trends, run ETL pipelines, view insights on a dashboard, and interact with a job-search assistant chatbot.
 
