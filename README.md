@@ -53,26 +53,77 @@ More feature details and screenshots are in the [extras guide](docs/extras/READM
 - **Frontend:** HTML, CSS, JavaScript, Chart.js, Plotly
 - **Testing:** pytest
 
-## Run locally
+## Clone and run locally
 
-Use Python 3.11 or newer. From the repository root:
+### Prerequisites
+
+- Git
+- Python 3.11 or newer
+- Internet access for installing packages and fetching live job postings
+
+### 1. Clone the repository
+
+```shell
+git clone https://github.com/Wincyveronika-21/end-to-end-job-market-analytics-platform.git
+cd end-to-end-job-market-analytics-platform
+```
+
+### 2. Create and activate a virtual environment
+
+**Windows PowerShell:**
 
 ```powershell
-python -m venv .venv
+py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
+```
+
+If PowerShell blocks activation, allow it for the current terminal session and
+activate again:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+```
+
+**macOS / Linux:**
+
+```shell
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### 3. Install dependencies
+
+With the virtual environment active, run:
+
+```shell
+python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pip install -r requirements-extras.txt
+```
+
+### 4. Start the application
+
+From the repository root, run:
+
+```shell
 python -m uvicorn api.main:app --host 127.0.0.1 --port 8000
 ```
 
-Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Use the puzzle-piece
-button in the dashboard header to open the extras workspace; each extras page
-has a home icon that returns to the main dashboard.
+Keep this terminal open while using the app. On startup, the application
+initializes the SQLite schema, attempts a job-ingestion pass, and starts its
+periodic scheduler. The local database is created at `data/job_market.db` and
+is ignored by Git.
 
-The API documentation is available at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
-On startup, the app initializes the existing SQLite schema, runs an ingestion
-pass, and starts the periodic scheduler. Data is stored locally in
-`data/job_market.db`; this database is ignored by Git.
+### 5. Open the dashboard and extras
+
+- Main dashboard: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+- Extras workspace: [http://127.0.0.1:8000/static/extras/index.html](http://127.0.0.1:8000/static/extras/index.html)
+- Interactive API documentation: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+
+Use the puzzle-piece button in the main dashboard header to open the extras.
+Each extras page has a home icon to return to the dashboard. Stop the local
+server with `Ctrl+C` in the terminal.
 
 ### Optional forecasting dependency
 
