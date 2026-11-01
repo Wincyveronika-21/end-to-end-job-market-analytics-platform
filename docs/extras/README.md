@@ -1,7 +1,7 @@
 # Job Market Analytics Extras
 
-The extras are additive features served by a separate FastAPI application. The
-existing platform entry point and dashboard remain unchanged.
+The extras are additive features integrated into the existing FastAPI
+application and dashboard. They share the dashboard's database and origin.
 
 ## Run locally
 
@@ -9,11 +9,14 @@ From the repository root:
 
 ```powershell
 python -m pip install -r requirements-extras.txt
-python -m uvicorn api.extras_app:app --host 127.0.0.1 --port 8001
+python -m uvicorn api.main:app --host 127.0.0.1 --port 8000
 ```
 
-Open [http://127.0.0.1:8001/](http://127.0.0.1:8001/) for the extras home page.
-The API schema is available at [http://127.0.0.1:8001/docs](http://127.0.0.1:8001/docs).
+Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) and use the puzzle-piece
+button in the header to open the extras page. You can also go directly to
+[/static/extras/index.html](http://127.0.0.1:8000/static/extras/index.html).
+Each extras page has a home icon that returns to the main dashboard.
+The API schema is available at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
 
 ## Features
 

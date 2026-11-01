@@ -19,12 +19,14 @@ from backend.services import AnalyticsService
 from chatbot.ai_engine import chatbot_engine
 from etl.pipeline import ETLPipeline
 from etl.scheduler import scheduler
+from api.extras.router import router as extras_router
 
 app = FastAPI(
     title="Job Market Analytics Platform API",
     description="End-to-End Real-Time Job Market Intelligence & AI Assistant",
     version="1.0.0"
 )
+app.include_router(extras_router)
 
 # CORS Configuration
 app.add_middleware(

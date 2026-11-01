@@ -18,6 +18,39 @@ main {
     margin: 0 auto;
 }
 
+.page-topbar {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1.25rem;
+    color: #9eacc2;
+}
+
+.back-dashboard {
+    display: inline-flex;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    color: #d3d9e7;
+    background: #111827;
+    border: 1px solid #29364d;
+    border-radius: 10px;
+}
+
+.back-dashboard:hover {
+    color: #fff;
+    border-color: #687fea;
+    background: #151d30;
+    text-decoration: none;
+}
+
+.back-dashboard svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
 a {
     color: #8caaff;
     text-decoration: none;
