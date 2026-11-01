@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Job Market Chat</title>
+    <link rel="stylesheet" href="extras.css?v=3">
+</head>
+<body>
+<main>
+    <p><a href="../../">Back to dashboard</a></p>
+    <h1>Job Market Chat and Learning Roadmap</h1>
+    <section class="panel">
+        <form id="chat-form">
+            <label>Question<input name="question" required maxlength="2000" placeholder="Which skills are most demanded?"></label>
+            <div class="form-grid">
+                <label>Target role (for a roadmap)<input name="target_role" maxlength="160" placeholder="Data Analyst"></label>
+                <label>Missing skills, comma separated<input name="missing_skills" placeholder="SQL, Python"></label>
+            </div>
+            <button type="submit">Ask</button>
+        </form>
+        <p id="message" class="message" role="alert"></p>
+    </section>
+    <section class="panel"><h2>Response</h2><pre id="result" class="result"></pre></section>
+</main>
+<script src="common.js?v=3"></script>
+<script src="chat.js?v=3"></script>
+</body>
+</html>

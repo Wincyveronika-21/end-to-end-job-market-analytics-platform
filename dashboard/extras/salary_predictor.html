@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Salary Predictor</title>
+    <link rel="stylesheet" href="extras.css?v=3">
+</head>
+<body>
+<main>
+    <p><a href="../../">Back to dashboard</a></p>
+    <h1>Salary Predictor</h1>
+    <section class="panel">
+        <form id="salary-form">
+            <div class="form-grid">
+                <label>Job title<input name="title" required maxlength="200"></label>
+                <label>City<input name="city" maxlength="100"></label>
+                <label>Experience
+                    <select name="experience_level"><option>Entry</option><option>Mid</option><option>Senior</option><option>Lead</option></select>
+                </label>
+                <label>Work mode
+                    <select name="work_mode"><option>Remote</option><option>Hybrid</option><option>Onsite</option></select>
+                </label>
+            </div>
+            <label>Skills, comma separated<input name="skills" placeholder="Python, SQL"></label>
+            <button type="submit">Predict annual salary</button>
+        </form>
+        <p id="message" class="message" role="alert"></p>
+    </section>
+    <section class="panel"><h2>Prediction</h2><div id="result" aria-live="polite"></div></section>
+    <p>Estimate from historical listings; actual offers depend on role scope, location, and employer.</p>
+</main>
+<script src="common.js?v=3"></script>
+<script src="salary_predictor.js?v=3"></script>
+</body>
+</html>
