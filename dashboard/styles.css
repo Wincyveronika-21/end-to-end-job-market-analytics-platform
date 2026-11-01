@@ -589,3 +589,228 @@ h1, h2, h3, h4, .brand-title {
     font-size: 0.88rem;
     outline: none;
 }
+
+.career-portal {
+    margin-top: 24px;
+}
+
+.career-portal-header {
+    margin-bottom: 20px;
+}
+
+.career-intro,
+.career-privacy-note {
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    line-height: 1.6;
+    margin-top: 8px;
+}
+
+.career-form {
+    display: grid;
+    gap: 10px;
+    max-width: 760px;
+}
+
+.career-form label {
+    color: var(--text-primary);
+    font-size: 0.86rem;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+.career-form select,
+.career-form textarea,
+.career-form input[type="file"] {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    color: var(--text-primary);
+    font-size: 0.88rem;
+}
+
+.career-form select:focus,
+.career-form textarea:focus {
+    border-color: var(--accent-blue);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}
+
+.career-form textarea {
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.career-form input[type="file"]::file-selector-button {
+    margin-right: 12px;
+    padding: 7px 10px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    color: #fff;
+    background: rgba(59, 130, 246, 0.45);
+    cursor: pointer;
+}
+
+.career-form .btn {
+    justify-self: start;
+    margin-top: 8px;
+}
+
+.career-form .btn:disabled {
+    opacity: 0.65;
+    cursor: wait;
+    transform: none;
+}
+
+.career-error {
+    color: #FDA4AF;
+    font-size: 0.86rem;
+}
+
+.career-plan-results {
+    margin-top: 24px;
+    padding-top: 22px;
+    border-top: 1px solid var(--bg-card-border);
+}
+
+.career-result-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.career-result-heading h3 {
+    font-size: 1.2rem;
+    margin: 4px 0;
+}
+
+.career-result-heading p:not(.career-eyebrow) {
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+}
+
+.career-eyebrow {
+    color: var(--accent-cyan);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+
+.career-score {
+    flex-shrink: 0;
+    padding: 9px 13px;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 30px;
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--accent-emerald);
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.career-skills-summary {
+    display: grid;
+    gap: 8px;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    background: rgba(15, 23, 42, 0.6);
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+    line-height: 1.6;
+}
+
+.career-skills-summary strong {
+    color: var(--text-primary);
+}
+
+.learning-path {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+    margin-top: 22px;
+}
+
+.learning-path > h4 {
+    grid-column: 1 / -1;
+    font-size: 1rem;
+}
+
+.learning-card {
+    padding: 17px;
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-md);
+    background: rgba(15, 23, 42, 0.55);
+}
+
+.learning-skill {
+    display: inline-block;
+    margin-bottom: 9px;
+    padding: 4px 9px;
+    border-radius: 20px;
+    background: rgba(139, 92, 246, 0.16);
+    color: #C4B5FD;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.learning-card h4 {
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.learning-card p,
+.learning-empty {
+    margin: 7px 0;
+    color: var(--text-secondary);
+    font-size: 0.83rem;
+    line-height: 1.55;
+}
+
+.learning-card p strong {
+    color: var(--text-primary);
+}
+
+.learning-card a {
+    display: inline-block;
+    margin-top: 8px;
+    color: #93C5FD;
+    font-size: 0.83rem;
+    text-decoration: none;
+}
+
+.learning-card a:hover {
+    text-decoration: underline;
+}
+
+.career-apply {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.career-apply span {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.btn-career-plan {
+    margin-top: 10px;
+    padding: 7px 10px;
+    font-size: 0.76rem;
+}
+
+@media (max-width: 640px) {
+    .career-result-heading {
+        flex-direction: column;
+    }
+
+    .career-form .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

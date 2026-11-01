@@ -174,6 +174,33 @@
                 </div>
             </div>
         </section>
+
+        <section class="section-card career-portal" id="career-portal">
+            <div class="career-portal-header">
+                <div>
+                    <h2 class="chart-title"><i class="fa-solid fa-graduation-cap"></i> Career Learning Portal</h2>
+                    <p class="career-intro">Choose a role, analyze your resume against its requirements, and turn skill gaps into learning goals and portfolio projects.</p>
+                </div>
+            </div>
+            <div class="career-form">
+                <label for="career-job-select">Job you want to prepare for</label>
+                <select id="career-job-select" class="filter-select">
+                    <option value="">Select a job posting</option>
+                </select>
+
+                <label for="career-resume-file">Upload a PDF resume (optional)</label>
+                <input id="career-resume-file" type="file" accept=".pdf,application/pdf">
+
+                <label for="career-resume-text">Or paste resume text</label>
+                <textarea id="career-resume-text" rows="7" maxlength="30000" placeholder="Paste resume text here if you prefer. Resume content is only used to create your career plan and is not saved."></textarea>
+                <p class="career-privacy-note">PDF only, up to 5 MB and 30 pages. Scanned/image-only PDFs are not supported. Resume content is analyzed for this request and is not stored.</p>
+                <button class="btn btn-primary" id="btn-build-career-plan">
+                    <i class="fa-solid fa-route"></i> Analyze Resume &amp; Build Learning Plan
+                </button>
+                <p class="career-error" id="career-plan-error" role="alert" style="display: none;"></p>
+            </div>
+            <div class="career-plan-results" id="career-plan-results" aria-live="polite" style="display: none;"></div>
+        </section>
     </div>
 
     <!-- AI Chatbot Floating Drawer -->

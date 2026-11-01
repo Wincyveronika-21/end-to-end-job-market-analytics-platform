@@ -7,11 +7,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import io
 import csv
 from typing import List, Optional
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, Query, HTTPException, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from pypdf import PdfReader
+from pypdf.errors import PdfReadError
 
 from config.config import BASE_DIR
 from database.db_manager import db
@@ -55,6 +57,43 @@ class ChatQueryRequest(BaseModel):
 
 class ResumeMatchRequest(BaseModel):
     skills: List[str]
+
+class JobCareerPlanRequest(BaseModel):
+    job_id: str
+    resume_text: str
+
+
+MAX_RESUME_PDF_BYTES = 5 * 1024 * 1024
+MAX_RESUME_PDF_PAGES = 30
+
+
+def extract_resume_pdf_text(pdf_content: bytes) -> str:
+    if not pdf_content.startswith(b"%PDF-"):
+        raise HTTPException(status_code=400, detail="The uploaded file is not a valid PDF.")
+
+    try:
+        reader = PdfReader(io.BytesIO(pdf_content), strict=True)
+    except (PdfReadError, ValueError, OSError) as exc:
+        raise HTTPException(status_code=400, detail="The uploaded PDF could not be read.") from exc
+
+    if reader.is_encrypted:
+        raise HTTPException(status_code=400, detail="Password-protected PDFs are not supported.")
+    if len(reader.pages) > MAX_RESUME_PDF_PAGES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"PDF resumes must have {MAX_RESUME_PDF_PAGES} pages or fewer."
+        )
+
+    extracted_text = "\n".join(page.extract_text() or "" for page in reader.pages).strip()
+    if not extracted_text:
+        raise HTTPException(
+            status_code=400,
+            detail="No selectable text was found. Upload a text-based PDF or paste your resume text."
+        )
+    if len(extracted_text) > 30000:
+        raise HTTPException(status_code=413, detail="Extracted resume text exceeds 30,000 characters.")
+    return extracted_text
+
 
 # API Endpoints
 @app.get("/api/analytics/overview")
@@ -123,6 +162,39 @@ def chat_query(req: ChatQueryRequest):
 @app.post("/api/career/match-resume")
 def match_resume(req: ResumeMatchRequest):
     return AnalyticsService.match_resume_skills(req.skills)
+
+@app.post("/api/career/job-plan")
+def build_job_career_plan(req: JobCareerPlanRequest):
+    if not req.job_id.strip():
+        raise HTTPException(status_code=400, detail="A job posting must be selected.")
+    if not req.resume_text.strip():
+        raise HTTPException(status_code=400, detail="Resume text cannot be empty.")
+    if len(req.resume_text) > 30000:
+        raise HTTPException(status_code=413, detail="Resume text must be 30,000 characters or fewer.")
+    try:
+        return AnalyticsService.build_job_career_plan(req.job_id, req.resume_text)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+@app.post("/api/career/job-plan-pdf")
+async def build_job_career_plan_from_pdf(
+    job_id: str = Form(...),
+    resume_file: UploadFile = File(...)
+):
+    if not job_id.strip():
+        raise HTTPException(status_code=400, detail="A job posting must be selected.")
+    if not resume_file.filename or not resume_file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Please upload a PDF resume.")
+
+    pdf_content = await resume_file.read(MAX_RESUME_PDF_BYTES + 1)
+    if len(pdf_content) > MAX_RESUME_PDF_BYTES:
+        raise HTTPException(status_code=413, detail="PDF resumes must be 5 MB or smaller.")
+
+    resume_text = extract_resume_pdf_text(pdf_content)
+    try:
+        return AnalyticsService.build_job_career_plan(job_id, resume_text)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 @app.get("/api/export/csv")
 def export_csv():

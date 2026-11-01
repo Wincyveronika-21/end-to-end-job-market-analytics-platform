@@ -1,62 +1,134 @@
-# Job Market Analytics Project
+# Job Market Analytics Platform
 
-## Project Description
+## Project description
 
-This project is a job market analytics platform designed to collect, process, analyze, and visualize information related to employment opportunities across industries and locations. It helps users understand labor market trends, job demand, skill requirements, and hiring patterns.
+The Job Market Analytics Platform is a Python web application for collecting,
+organizing, and analyzing job-posting data. It turns raw listings into
+actionable insights about skills, compensation, experience levels, work modes,
+and hiring locations. A dashboard presents those insights, while job seekers
+can explore role-specific skill gaps and learning suggestions.
 
-The system combines data collection, transformation, storage, and reporting to provide a practical view of the job market. It can be used by job seekers, recruiters, analysts, and business stakeholders who need insight into how the market is evolving.
+The project combines a FastAPI backend, a SQLite database, an ETL pipeline, and
+a browser-based dashboard. Its extras workspace adds forecasting, salary
+estimation, early-career insights, opportunity mapping, and read-only
+natural-language analytics.
 
-## Objectives
+## Goals
 
-- Collect job-related data from multiple sources
-- Clean and transform raw data into usable formats
-- Store structured data in a database
-- Analyze trends in skills, locations, and job categories
-- Present insights through a dashboard or reporting interface
-- Support decision-making for hiring and career planning
+- Ingest job listings from public job data sources and normalize their fields.
+- Extract skills from job descriptions and maintain structured job/skill
+  relationships.
+- Summarize hiring patterns, salary ranges, work modes, and skill demand.
+- Help job seekers compare their skills to a selected role and plan learning.
+- Make data available to dashboard users and Power BI through a CSV endpoint.
+- Keep additive career and analytics features organized, tested, and documented.
 
-## Main Components
-### 1. Data Collection
-The ETL layer gathers raw job and market data from external sources or APIs.
- This process is responsible for retrieving data consistently and storing it for analysis.
+## Main components
 
-### 2. Data Processing
-Collected data is cleaned, normalized, and transformed into structured formats. This step ensures that the information is accurate and ready for analysis.
+### Data collection and ETL
 
-### 3. Database Storage
-The project uses a database layer to store processed data in an organized way. This allows for efficient querying and trend analysis.
+The ETL pipeline collects postings from the Remotive and Jobicy APIs, optionally
+adds synthetic demonstration postings, normalizes job and salary fields,
+extracts skills using the project taxonomy, and upserts the results into SQLite.
+A background scheduler periodically runs ingestion.
 
-### 4. Analytics and AI
-The application includes AI-powered capabilities to interpret job market patterns, categorize skills, and support intelligent recommendations or chatbot interactions.
+### Database
 
-### 5. Dashboard and Visualization
-The dashboard presents important metrics through charts, summaries, and visual indicators to make complex data easier to interpret.
+The existing schema stores jobs, normalized skills, and job-to-skill links in
+`jobs`, `skills`, and `job_skills`. Analytical views provide skill demand,
+work-mode summaries, and city hiring statistics. Extras query this existing
+data; no new tables are required.
 
-## Key Features
+### Analytics and APIs
 
-- Real-time or scheduled job data collection
-- Skill taxonomy and classification
-- Market analysis by industry, region, and role
-- AI-driven insights and querying
-- Web-based dashboard interface
-- Structured and scalable backend architecture
+FastAPI exposes the existing analytics, job search, resume analysis, chatbot,
+ingestion, and CSV export endpoints. Feature-specific routers provide role
+skill-gap analysis, salary prediction, demand forecasting, fresher insights,
+city aggregation, and a read-only SQL chat and learning roadmap.
 
-## Why This Project Matters
+### Dashboard
 
-The job market is dynamic and heavily influenced by technology, economic shifts, and changing employer needs. This project helps make that data actionable by turning raw information into understandable, useful insights.
+The main HTML/CSS/JavaScript dashboard uses Chart.js for market charts and
+provides job search, resume matching, a career learning portal, and the market
+chat assistant. A puzzle-piece launcher opens the extras workspace on the same
+server. Every extras page includes a home button back to the main dashboard.
 
-It supports better hiring decisions, stronger career planning, and a deeper understanding of future workforce trends.
+### Career Learning Portal
 
-## Project Scope
+Users select a live posting, paste resume text or upload a PDF, and compare
+their skills with that specific role. The portal returns matched and missing
+skills, a role-match score, learning goals, practical portfolio-project
+briefs, and an employer application link when one is present. Applications are
+completed on the employer's website.
 
-The project includes:
+Resume text is used only to produce the requested plan and is not stored. PDF
+uploads are limited to 5 MB and 30 pages. Password-protected or scanned,
+image-only PDFs are not supported.
 
-- Data ingestion and ETL pipelines
-- Database schema and data management
-- AI and analytics processing
-- Dashboard presentation
-- Documentation and operational support
+### Extras workspace
 
-## Expected Outcome
+- **Skill Gap Analyzer:** matches user skills or resume text against postings
+  for a target role, ranks missing skills by demand, and recommends three next
+  skills.
+- **Salary Predictor:** trains a Random Forest regressor on labeled salary
+  postings and estimates salary for postings without a reported salary. Model
+  artifacts are generated locally and ignored by Git.
+- **Skill Trend Forecast:** forecasts demand for popular skills over the next
+  few months using Prophet when installed or statsmodels otherwise. It explains
+  when the available posting history is too short.
+- **Fresher Insights:** compares fresher and senior skill demand, counts
+  internships by city, and reports postings per distinct skill as a demand
+  proxy (not applicant competition).
+- **City and Remote Opportunity Map:** aggregates postings and available
+  salaries by city and work mode, plots cities with known coordinates, and
+  compares remote versus in-person options.
+- **Chat and Learning Roadmap:** maps supported job-market questions to
+  allowlisted, read-only SQL and creates a three-month role-focused learning
+  plan. SQL execution is restricted to approved tables/views and a fixed row
+  limit.
 
-The final result is a smart job market analytics platform that brings together data collection, intelligence, and visualization in one system, helping users monitor and understand employment trends more effectively.
+## Technology
+
+- Python and FastAPI
+- SQLite and SQL
+- Pandas, scikit-learn, joblib, and statsmodels for data and modeling
+- HTML, CSS, JavaScript, Chart.js, and Plotly
+- pytest for platform and feature tests
+
+## Data flow
+
+```text
+Remotive / Jobicy APIs
+          |
+          v
+     ETL collector -> transformer / skill extraction
+          |                         |
+          +-------------------------+
+                                    v
+                          SQLite jobs and skills
+                                    |
+                +-------------------+------------------+
+                v                                      v
+      Analytics and extras APIs           Dashboard and career tools
+```
+
+## Run and validate
+
+From the repository root, install `requirements.txt` and
+`requirements-extras.txt`, then start the app with:
+
+```powershell
+python -m uvicorn api.main:app --host 127.0.0.1 --port 8000
+```
+
+Open the dashboard at `http://127.0.0.1:8000/`. The FastAPI schema is at
+`http://127.0.0.1:8000/docs`. Run the platform and extras tests with:
+
+```powershell
+python -m pytest -q tests/extras tests/test_platform.py
+```
+
+## Screenshots
+
+See the [main README](../../README.md) and [extras guide](../extras/README.md)
+for screenshots and feature-level usage instructions.

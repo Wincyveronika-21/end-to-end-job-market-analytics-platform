@@ -56,6 +56,17 @@ function setupEventListeners() {
 
     // Resume match button
     document.getElementById("btn-match-skills").addEventListener("click", handleResumeMatch);
+
+    document.getElementById("btn-build-career-plan").addEventListener("click", handleBuildCareerPlan);
+    document.getElementById("career-resume-file").addEventListener("change", handleResumeFile);
+    document.getElementById("job-stream-container").addEventListener("click", event => {
+        const button = event.target.closest(".btn-career-plan");
+        if (!button) return;
+
+        document.getElementById("career-job-select").value = button.dataset.jobId;
+        document.getElementById("career-portal").scrollIntoView({ behavior: "smooth" });
+        document.getElementById("career-resume-text").focus({ preventScroll: true });
+    });
 }
 
 // 1. Overview KPIs
@@ -255,19 +266,20 @@ async function fetchLiveJobs() {
         const workMode = document.getElementById("filter-workmode").value;
         const search = document.getElementById("search-input").value;
 
-        let url = `/api/jobs?limit=15&work_mode=${workMode}`;
+        let url = `/api/jobs?limit=100&work_mode=${workMode}`;
         if (search) url += `&search=${encodeURIComponent(search)}`;
 
         const res = await fetch(url);
         const data = await res.json();
         const container = document.getElementById("job-stream-container");
+        populateCareerJobOptions(data.jobs || []);
 
         if (!data.jobs || data.jobs.length === 0) {
             container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No postings matched your criteria.</p>';
             return;
         }
 
-        container.innerHTML = data.jobs.map(j => `
+        container.innerHTML = data.jobs.slice(0, 15).map(j => `
             <div class="job-item">
                 <div>
                     <div class="job-title-text">${escapeHtml(j.title)}</div>
@@ -276,20 +288,169 @@ async function fetchLiveJobs() {
                         <span><i class="fa-solid fa-location-dot"></i> ${escapeHtml(j.city)}</span>
                     </div>
                     <div class="job-tags">
-                        <span class="tag ${j.work_mode === 'Remote' ? 'tag-remote' : 'tag-onsite'}">${j.work_mode}</span>
-                        <span class="tag">${j.experience_level || 'Mid'}</span>
-                        <span class="tag">${j.source}</span>
+                        <span class="tag ${j.work_mode === 'Remote' ? 'tag-remote' : 'tag-onsite'}">${escapeHtml(j.work_mode)}</span>
+                        <span class="tag">${escapeHtml(j.experience_level || 'Mid')}</span>
+                        <span class="tag">${escapeHtml(j.source)}</span>
                     </div>
                 </div>
                 <div style="text-align: right;">
                     <div class="job-salary">$${(j.salary_avg || 0).toLocaleString()}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted);">${j.date_posted}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(j.date_posted)}</div>
+                    <button class="btn btn-outline btn-career-plan" type="button" data-job-id="${escapeHtml(String(j.id))}">
+                        <i class="fa-solid fa-graduation-cap"></i> Prepare for role
+                    </button>
                 </div>
             </div>
         `).join("");
 
     } catch (e) {
         console.error("Error fetching live jobs stream:", e);
+    }
+}
+
+function populateCareerJobOptions(jobs) {
+    const select = document.getElementById("career-job-select");
+    jobs.forEach(job => {
+        const id = String(job.id);
+        if (Array.from(select.options).some(option => option.value === id)) return;
+        const label = [job.title, job.company].filter(Boolean).join(" at ");
+        select.add(new Option(label || "Job posting", id));
+    });
+}
+
+async function handleResumeFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const error = document.getElementById("career-plan-error");
+    error.style.display = "none";
+    if (!/\.pdf$/i.test(file.name)) {
+        error.textContent = "Please choose a PDF resume.";
+        error.style.display = "block";
+        event.target.value = "";
+        return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        error.textContent = "PDF resumes must be 5 MB or smaller.";
+        error.style.display = "block";
+        event.target.value = "";
+        return;
+    }
+}
+
+async function handleBuildCareerPlan() {
+    const jobId = document.getElementById("career-job-select").value;
+    const resumeText = document.getElementById("career-resume-text").value.trim();
+    const resumeFile = document.getElementById("career-resume-file").files[0];
+    const error = document.getElementById("career-plan-error");
+    const button = document.getElementById("btn-build-career-plan");
+    const results = document.getElementById("career-plan-results");
+    error.style.display = "none";
+
+    if (!jobId || (!resumeFile && !resumeText)) {
+        error.textContent = "Select a job and upload a PDF or paste resume text to build your plan.";
+        error.style.display = "block";
+        return;
+    }
+    if (resumeFile && resumeFile.size > 5 * 1024 * 1024) {
+        error.textContent = "PDF resumes must be 5 MB or smaller.";
+        error.style.display = "block";
+        return;
+    }
+
+    button.disabled = true;
+    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Building your plan...';
+    try {
+        let response;
+        if (resumeFile) {
+            const formData = new FormData();
+            formData.append("job_id", jobId);
+            formData.append("resume_file", resumeFile);
+            response = await fetch("/api/career/job-plan-pdf", {
+                method: "POST",
+                body: formData
+            });
+        } else {
+            response = await fetch("/api/career/job-plan", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ job_id: jobId, resume_text: resumeText })
+            });
+        }
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.detail || "Could not build the career plan.");
+        }
+        renderCareerPlan(data);
+        results.style.display = "block";
+    } catch (e) {
+        console.error("Error building job career plan:", e);
+        error.textContent = e.message || "Could not build the career plan. Please try again.";
+        error.style.display = "block";
+    } finally {
+        button.disabled = false;
+        button.innerHTML = '<i class="fa-solid fa-route"></i> Analyze Resume &amp; Build Learning Plan';
+    }
+}
+
+function renderCareerPlan(data) {
+    const results = document.getElementById("career-plan-results");
+    const job = data.job || {};
+    const matchLabel = data.match_score === null ? "No skills listed" : `${data.match_score}% role match`;
+    const matched = data.matched_skills.length
+        ? data.matched_skills.map(escapeHtml).join(", ")
+        : "No listed requirements matched yet";
+    const missing = data.missing_skills.length
+        ? data.missing_skills.map(escapeHtml).join(", ")
+        : "None";
+    const applicationUrl = safeExternalUrl(job.url);
+    const learningCards = data.learning_path.length
+        ? data.learning_path.map(item => {
+            const resourceUrl = safeExternalUrl(item.resource_url);
+            return `
+                <article class="learning-card">
+                    <span class="learning-skill">${escapeHtml(item.skill)}</span>
+                    <h4>${escapeHtml(item.project_title)}</h4>
+                    <p><strong>Learning goal:</strong> ${escapeHtml(item.focus)}</p>
+                    <p><strong>Portfolio project:</strong> ${escapeHtml(item.project_brief)}</p>
+                    ${resourceUrl ? `<a href="${escapeHtml(resourceUrl)}" target="_blank" rel="noopener noreferrer">Open learning resource <i class="fa-solid fa-arrow-up-right-from-square"></i></a>` : ""}
+                </article>
+            `;
+        }).join("")
+        : '<p class="learning-empty">Your resume covers the skills listed for this role. Review the project requirements and use your existing experience to prepare your application.</p>';
+
+    results.innerHTML = `
+        <div class="career-result-heading">
+            <div>
+                <p class="career-eyebrow">YOUR ROLE PLAN</p>
+                <h3>${escapeHtml(job.title)}${job.company ? ` at ${escapeHtml(job.company)}` : ""}</h3>
+                <p>${escapeHtml([job.city, job.work_mode].filter(Boolean).join(" · "))}</p>
+            </div>
+            <div class="career-score">${escapeHtml(matchLabel)}</div>
+        </div>
+        <div class="career-skills-summary">
+            <p><strong>Skills found in resume:</strong> ${matched}</p>
+            <p><strong>Skills to develop:</strong> ${missing}</p>
+        </div>
+        <div class="learning-path">
+            <h4><i class="fa-solid fa-list-check"></i> Learning goals &amp; project briefs</h4>
+            ${learningCards}
+        </div>
+        <div class="career-apply">
+            ${applicationUrl
+                ? `<a class="btn btn-primary" href="${escapeHtml(applicationUrl)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> Continue to application</a><span>Applications are submitted on the employer's website.</span>`
+                : '<span>No application link is available for this posting.</span>'}
+        </div>
+    `;
+}
+
+function safeExternalUrl(value) {
+    if (!value) return null;
+    try {
+        const url = new URL(value);
+        return url.protocol === "https:" || url.protocol === "http:" ? url.href : null;
+    } catch (e) {
+        return null;
     }
 }
 
